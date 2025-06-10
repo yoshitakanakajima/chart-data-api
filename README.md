@@ -88,7 +88,7 @@ CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "80"]
 ```
 
 ## FastAPIコードを作成
-`main.py`ファイルを作成する
+`main.py`ファイルを作成する。
 
 ```python
 from typing import Union
@@ -105,3 +105,21 @@ def read_root():
 def read_patient(patient_id: int, q: Union[str, None] = None):
     return {"patient_id": patient_id, "q": q}
 ```
+
+## Dockerイメージをbuildする
+Dockerコンテナをビルドして、アプリケーションを起動する。
+コンテナが起動したら、`http://localhost:8000`にアクセスして、メッセージが表示されることを確認する。
+
+```
+docker compose up --build
+```
+
+## APIドキュメント
+
+### Swagger UI
+
+http://127.0.0.1/docs
+
+### ReDoc
+
+http://127.0.0.1/redoc
