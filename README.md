@@ -34,7 +34,9 @@ uvicorn>=0.34.3,<0.35.0
 
 ※１ WSGI（Web Server Gateway Interface）の後継。WSGIは*同期Pythonアプリ*の標準を提供。長時間ポーリングなどの存続期間の長い接続は許可されない。
 
-## コンテナ定義
+## Dockerファイルの作成
+
+### docker-compose.yml
 Webサービスを定義し、ポートマッピングやボリュームの設定する。
 
 ```docker-compose.yml
@@ -52,11 +54,12 @@ services:
       - ./src:/var/www/api/src
 ```
 
-## Dockerイメージビルド
+### Dockerfile
 ログ出力をリアルタイムで行う（バッファリングを有効にすると、異常終了した際、バッファに残ったログは出力されない）
 pipでライブラリインストールを行う際、キャッシュを使うと早くなるが、ダウンロードしたファイルが残り続けて容量が重たくなる。
 しかし、キャッシュを消すコマンドがないため、キャッシュを使わずにインストールを実行する。
 Uvicornにプロキシ経由（Nginxなどのロードバランサー）でHTTPSで動作しているアプリケーションに対して、送信されるヘッダを信頼するよう`--proxy-headers`オプションを追加する。
+`src.main:app` は、main.pyの `app = FastAPI()` を指す。
 
 ```Dockerfile
 # Python3を親イメージ
@@ -82,4 +85,23 @@ COPY ./src /var/www/api/src
 
 # ASGIの起動
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "80"]
+```
+
+## FastAPIコードを作成
+`main.py`ファイルを作成する
+
+```python
+from typing import Union
+
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Hello World"}
+
+@app.get("/patients/{patient_id}")
+def read_patient(patient_id: int, q: Union[str, None] = None):
+    return {"patient_id": patient_id, "q": q}
 ```
